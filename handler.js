@@ -8,7 +8,6 @@ const empty200 = {statusCode: 200, body: ''};
 
 const getOracleDocs = async (query) => {
   const baseUrl = 'https://docs.oracle.com/apps/search/search.jsp?q=';
-
   const url = `${baseUrl}${query}&product=${process.env.PRODUCT}`;
 
   const results = await scrapper(url, '.srch-result', [{
@@ -134,17 +133,15 @@ module.exports.commandHandler = async (event) => {
   const text = body.text.toLowerCase().trim();
   const url = body.response_url;
 
-  if (body.type === 'mos') {
-    return await processMosCommand(text, url);
+  switch (body.type) {
+    case 'mos':
+      return await processMosCommand(text, url);
+    case 'pb':
+      return await processPbCommand(text, url);
+    default: // bad command, log and ignore
+      console.error(`invalid command type: ${body.type}`);
+      return empty200;
   }
-
-  if (body.type ==='pb') {
-    return await processPbCommand(text, url);
-  }
-
-  // bad command, log and ignore
-  console.error(`invalid command type: ${body.type}`);
-  return empty200;
 };
 
 module.exports.processMosCommand = async (event) => {
