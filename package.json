@@ -1,0 +1,21 @@
+{
+  "name": "ps-slack",
+  "version": "1.0.0",
+  "description": "Slack commands for PeopleSoft",
+  "main": "handler.js",
+  "dependencies": {
+    "aws-sdk": "^2.348.0",
+    "axios": "^0.18.0",
+    "flatted": "^2.0.0",
+    "x-ray": "^2.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-google": "^0.11.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcus Cuda",
+  "license": "MIT"
+}

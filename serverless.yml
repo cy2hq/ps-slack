@@ -1,0 +1,70 @@
+service: ps-slack
+
+provider:
+  name: aws
+  stage: prod
+  runtime: nodejs8.10
+  memorySize: 128
+  timeout: 10 
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "sqs:SendMessage"
+        - "sqs:GetQueueUrl"
+      Resource: 
+        Fn::GetAtt:
+          - CommandQueue
+          - Arn  
+    - Effect: "Allow"
+      Action:
+        - "sqs:ListQueues"
+      Resource: 
+         Fn::GetAtt:
+          - CommandQueue
+          - Arn       
+
+custom:
+  baseUrl: v1
+  mosUrl: https://www.oracle.com/search/results/_/N-33y?No=0&Nr=106&Nrpp=5&Ntk=SI-ALL5&Ntt=
+  product: E92519_02
+
+functions:
+  pbSlackCommand:
+    handler: handler.pbCommand
+    events:
+      - http:
+          path: ${self:custom.baseUrl}/pb-search
+          method: post
+    environment:
+      QUEUE: 
+        Ref: CommandQueue
+
+  mosSlackCommand:
+    handler: handler.mosCommand
+    events:
+      - http:
+          path: ${self:custom.baseUrl}/mos-search
+          method: post
+    environment:
+      QUEUE:
+        Ref: CommandQueue
+
+  commandHandler:
+    handler: handler.commandHandler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - CommandQueue
+              - Arn
+          batchSize: 1
+    environment:
+      PRODUCT:  ${self:custom.product}
+      MOSURL:  ${self:custom.mosUrl}
+      
+resources:
+  Resources:
+    CommandQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "PS-BOT-COMMANDS"
