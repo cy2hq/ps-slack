@@ -40,12 +40,19 @@ const getMosLinks = async (query) => {
   return results.splice(0, 5).map((item) => item.link);
 };
 
-const sendResults = async (query, url, attachments)=>{
+const sendResults = async (query, url, attachments) => {
   let data;
   if (attachments.length === 0) {
-    data = {text: 'sorry, I wasn\'t able to find anything'};
+    data = {
+      response_type: 'in_channel',
+      text: 'sorry, I wasn\'t able to find anything',
+    };
   } else {
-    data = {text: `here are the results I found for: '${query}'`, attachments};
+    data = {
+      response_type: 'in_channel',
+      text: `here are the results I found for: '${query}'`,
+      attachments,
+    };
   }
 
   try {
@@ -57,7 +64,7 @@ const sendResults = async (query, url, attachments)=>{
   return empty200;
 };
 
-const enqueueRequest= async (event, type) => {
+const enqueueRequest = async (event, type) => {
   const body = parse(event.body);
   body.type = type;
 
@@ -70,8 +77,15 @@ const enqueueRequest= async (event, type) => {
     await sqs.sendMessage(params).promise();
   } catch (error) {
     console.error(error);
+    return {statusCode: 200, body: JSON.stringify({
+      text: 'error processing request - check logs...',
+    })};
   }
-  return {statusCode: 200, body: JSON.stringify({text: 'working on your request...'})};
+
+  return {statusCode: 200, body: JSON.stringify({
+    response_type: 'in_channel',
+    text: 'working on your request...',
+  })};
 };
 
 const processMosCommand = async (text, url) => {
@@ -104,14 +118,23 @@ const processMosCommand = async (text, url) => {
     }
 
     const text = cleaned.join('\n');
-    return {title: item.title.replace('\n', ' - ').replace(/  +/g, ' '), docid: item.docid, text};
+    const docid = item.docid ? item.docid.substring(8, item.docid.length-1) : '';
+    const title = item.title ? item.title.replace('\n', ' - ').replace(/  +/g, ' ').trim() : docid;
+    return {title, docid: docid, text};
   });
 
-  const attachments = items.map((item) => ({
-    title: item.title.trim(),
-    title_link: `https://support.oracle.com/epmos/faces/DocumentDisplay?id=${item.docid.substring(8, item.docid.length-1)}`,
-    text: item.text,
-  }));
+  const attachments = items.map((item) => {
+    const attachment = {
+      title: item.title,
+      text: item.text,
+    };
+
+    if (item.docid) {
+      attachment.title_link = `https://support.oracle.com/epmos/faces/DocumentDisplay?id=${item.docid}`;
+    }
+
+    return attachment;
+  });
 
   return await sendResults(text, url, attachments);
 };

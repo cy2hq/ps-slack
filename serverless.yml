@@ -68,3 +68,6 @@ resources:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: "PS-BOT-COMMANDS"
+        VisibilityTimeout: 60
+        MessageRetentionPeriod: 120
+
