@@ -4,14 +4,14 @@
   "description": "Slack commands for PeopleSoft",
   "main": "handler.js",
   "dependencies": {
-    "aws-sdk": "^2.348.0",
-    "axios": "^0.18.0",
-    "flatted": "^2.0.0",
-    "x-ray": "^2.3.3"
+    "aws-sdk": "^2.656.0",
+    "axios": "^0.19.2",
+    "flatted": "^2.0.2",
+    "x-ray": "^2.3.4"
   },
   "devDependencies": {
-    "eslint": "^5.8.0",
-    "eslint-config-google": "^0.11.0"
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
